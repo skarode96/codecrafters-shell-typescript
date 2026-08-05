@@ -24,7 +24,7 @@ const handleType = (input: string): void => {
     input = input.replace("type ", "");
     const types = ["exit", "echo", "type"];
     if(types.includes(input)) {
-        types.includes(input) ? console.log(`${input} is a shell builtin`);
+       console.log(`${input} is a shell builtin`);
     } else {
         console.log(`${input}: not found`);
     }
