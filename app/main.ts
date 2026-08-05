@@ -30,19 +30,19 @@ rl.on('line', async (input) => {
 });
 
 const handleType = async (input: string): Promise<void> => {
-    input = input.replace('type ', '');
+    const command = input.replace('type ', '');
     const types = ['exit', 'echo', 'type'];
     const paths: string[] = process.env.PATH!.split(':');
-    if (types.includes(input)) {
-        console.log(`${input} is a shell builtin`);
+    if (types.includes(command)) {
+        console.log(`${command} is a shell builtin`);
         return;
     } else {
         for (const path of paths) {
-            let execPath = path + '/' + input;
+            let execPath = path + '/' + command;
             if (fs.existsSync(execPath)) {
                 try {
                     await access(execPath, fs.constants.X_OK);
-                    console.log(`${input} is ${execPath}`);
+                    console.log(`${command} is ${execPath}`);
                     return;
                 } catch (e) {
 
@@ -50,7 +50,7 @@ const handleType = async (input: string): Promise<void> => {
             }
         }
     }
-    console.log(`${input}: not found`);
+    console.log(`${command}: not found`);
 };
 
 const handleEcho = (input: string): void => {
