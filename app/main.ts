@@ -23,7 +23,11 @@ rl.on("line", (input) => {
 const handleType = (input: string): void => {
     input = input.replace("type ", "");
     const types = ["exit", "echo", "type"];
-    types.includes(input) ? console.log(`${input} is a shell builtin`) : console.log(`${input}: not found`);
+    if(types.includes(input)) {
+        types.includes(input) ? console.log(`${input} is a shell builtin`);
+    } else {
+        console.log(`${input}: not found`);
+    }
 }
 
 const handleEcho = (input: string): void => {
