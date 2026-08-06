@@ -101,6 +101,10 @@ const handlePwd = (): void => {
 
 const handleCd = (dir: string): void => {
     try {
+        if (dir.startsWith('~')) {
+            process.chdir(process.env.HOME + dir.slice(1));
+            return;
+        }
         process.chdir(dir);
     } catch (e) {
         console.log(`cd: ${dir}: No such file or directory`);
