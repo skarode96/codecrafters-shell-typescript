@@ -31,6 +31,9 @@ rl.on('line', async (input) => {
         case 'pwd':
             handlePwd();
             break;
+        case 'cd':
+            handleCd(args[0]);
+            break;
         default:
             const executed = await handleExec(command, args);
             if (!executed) {
@@ -41,7 +44,7 @@ rl.on('line', async (input) => {
 });
 
 const handleType = async (command: string): Promise<void> => {
-    const types = ['exit', 'echo', 'type', 'pwd'];
+    const types = ['exit', 'echo', 'type', 'pwd', 'cd'];
     if (types.includes(command)) {
         console.log(`${command} is a shell builtin`);
         return;
@@ -95,3 +98,12 @@ const handleExec = async (command: string, args: string[]): Promise<boolean> => 
 const handlePwd = (): void => {
     console.log(process.cwd());
 };
+
+const handleCd = (dir: string): void => {
+    try {
+        process.chdir(dir);
+    } catch (e) {
+        console.log(`cd: ${dir}: No such file or directory`);
+    }
+
+}
