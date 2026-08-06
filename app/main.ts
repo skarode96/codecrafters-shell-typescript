@@ -28,6 +28,9 @@ rl.on('line', async (input) => {
         case 'echo':
             handleEcho(args);
             break;
+        case 'pwd':
+            handlePwd();
+            break;
         default:
             const executed = await handleExec(command, args);
             if (!executed) {
@@ -38,7 +41,7 @@ rl.on('line', async (input) => {
 });
 
 const handleType = async (command: string): Promise<void> => {
-    const types = ['exit', 'echo', 'type'];
+    const types = ['exit', 'echo', 'type', 'pwd'];
     if (types.includes(command)) {
         console.log(`${command} is a shell builtin`);
         return;
@@ -87,4 +90,8 @@ const handleExec = async (command: string, args: string[]): Promise<boolean> => 
         return true;
     }
     return false;
+};
+
+const handlePwd = (): void => {
+    console.log(process.cwd());
 };
