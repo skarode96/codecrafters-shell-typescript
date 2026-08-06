@@ -1,6 +1,11 @@
 import {createInterface} from 'readline';
 import fs from 'fs';
-import {access, constants} from 'node:fs/promises';
+import {access} from 'node:fs/promises';
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+import path from 'path';
+
+const PATHS = process.env.PATH?.split(':') ?? [];
 
 const rl = createInterface({
     input: process.stdin,
@@ -11,33 +16,34 @@ const rl = createInterface({
 rl.prompt();
 
 rl.on('line', async (input) => {
-    let command = input.split(' ')[0];
+    const [command, ...args] = input.trim().split(/\s+/);
 
     switch (command) {
         case 'exit':
             rl.close();
             return;
         case 'type':
-            await handleType(input);
+            await handleType(args[0]);
             break;
         case 'echo':
-            handleEcho(input);
+            handleEcho(args);
             break;
         default:
-            console.log(`${input}: command not found`);
+            const executed = await handleExec(command, args);
+            if (!executed) {
+                console.log(`${input}: command not found`);
+            }
     }
     rl.prompt();
 });
 
-const handleType = async (input: string): Promise<void> => {
-    const command = input.replace('type ', '');
+const handleType = async (command: string): Promise<void> => {
     const types = ['exit', 'echo', 'type'];
-    const paths: string[] = process.env.PATH!.split(':');
     if (types.includes(command)) {
         console.log(`${command} is a shell builtin`);
         return;
     } else {
-        for (const path of paths) {
+        for (const path of PATHS) {
             let execPath = path + '/' + command;
             if (fs.existsSync(execPath)) {
                 try {
@@ -53,7 +59,32 @@ const handleType = async (input: string): Promise<void> => {
     console.log(`${command}: not found`);
 };
 
-const handleEcho = (input: string): void => {
-    input = input.replace('echo ', '');
-    console.log(input);
+const findExecutable = async (file: string): Promise<string | null> => {
+    for (const p of PATHS) {
+        let execPath = path.join(p, file);
+        if (fs.existsSync(execPath)) {
+            try {
+                await access(execPath, fs.constants.X_OK);
+                return execPath;
+            } catch (e) {
+
+            }
+        }
+    }
+    return null;
+};
+
+const handleEcho = (args: string[]): void => {
+    console.log(...args);
+};
+
+const handleExec = async (command: string, args: string[]): Promise<boolean> => {
+    const execFilePromise = promisify(execFile);
+    const execFilePath = await findExecutable(command);
+    if(execFilePath) {
+        const {stdout} = await execFilePromise(command, args);
+        process.stdout.write(stdout);
+        return true;
+    }
+    return false;
 };
